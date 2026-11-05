@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import List, Optional, Set, Union
 from pydantic import field_validator
@@ -35,9 +36,9 @@ class Settings(BaseSettings):
     }
 
     # OCR Settings
-    DEFAULT_LANGUAGE: str = "en"
+    TESSERACT_LANG: str = os.getenv("TESSERACT_LANG", "khm+eng")
     SUPPORTED_LANGUAGES: List[str] = ["en", "km", "km+en"]
-    TESSERACT_CMD: str = "tesseract"
+    TESSERACT_CMD: str = os.getenv("TESSERACT_CMD", "tesseract")
     TESSDATA_DIR: Optional[Path] = None
     TESSERACT_LANG_ENGLISH: str = "eng"
     TESSERACT_LANG_KHMER: str = "khm"

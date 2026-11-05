@@ -51,9 +51,9 @@ class OCRService:
                 detail=f"Could not read Tesseract language data: {exc}",
             ) from exc
 
-    def get_language(self, language: str = "en") -> Tuple[str, str]:
+    def get_language(self, language: Optional[str] = None) -> Tuple[str, str]:
         """Return the Tesseract language code and canonical API language label."""
-        lang = (language or settings.DEFAULT_LANGUAGE).strip().lower().replace("_", "+")
+        lang = (language or settings.TESSERACT_LANG).strip().lower().replace("_", "+")
         language_map = {
             "en": (settings.TESSERACT_LANG_ENGLISH, "en"),
             "english": (settings.TESSERACT_LANG_ENGLISH, "en"),
@@ -162,7 +162,7 @@ class OCRService:
         document_id: str,
         filename: str,
         image_bytes: bytes,
-        language: str = "en",
+        language: Optional[str] = None,
     ) -> Dict[str, Any]:
         start_time = time.perf_counter()
         tesseract_language, canonical_language = self.get_language(language)

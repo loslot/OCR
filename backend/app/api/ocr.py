@@ -7,6 +7,7 @@ from app.schemas.ocr_schema import (
     HistoryResponse,
     OCRResponse,
 )
+from app.core.config import settings
 from app.services.file_service import file_service
 from app.services.ocr_service import ocr_service
 
@@ -30,7 +31,7 @@ router = APIRouter(prefix="/ocr", tags=["OCR"])
 async def extract_text_from_image(
     file: UploadFile = File(..., description="Image file to process"),
     language: Optional[str] = Form(
-        "en",
+        None,
         description="OCR language: 'en', 'km', or 'km+en' for mixed Khmer and English",
     ),
 ) -> OCRResponse:
@@ -38,7 +39,7 @@ async def extract_text_from_image(
 
     preprocessing, and save the result JSON.
     """
-    lang = (language or "en").strip().lower()
+    lang = (language or settings.TESSERACT_LANG).strip().lower()
 
     # 1. Validate file format and size
     filename, file_bytes = await file_service.validate_and_read_image(file)

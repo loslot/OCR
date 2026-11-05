@@ -11,7 +11,7 @@ import {
   healthResponseSchema,
 } from "@/lib/validations/ocr";
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8002";
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
 // Ensure no trailing slash
 const API_URL = rawApiUrl.replace(/\/+$/, "");
 

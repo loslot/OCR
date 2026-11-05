@@ -120,8 +120,8 @@ PROJECT_NAME="QuickOCR API"
 VERSION="1.0.0"
 API_PREFIX="/api"
 CORS_ORIGINS="http://localhost:3000,http://127.0.0.1:3000"
-DEFAULT_LANGUAGE="en"
-TESSERACT_CMD="tesseract"
+TESSERACT_LANG="khm+eng"
+TESSERACT_CMD="/usr/bin/tesseract"
 # TESSDATA_DIR="/path/to/tessdata" # optional
 TESSERACT_LANG_ENGLISH="eng"
 TESSERACT_LANG_KHMER="khm"
@@ -136,13 +136,30 @@ OCR_TARGET_HEIGHT=1800
 From the `backend` directory, run:
 
 ```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8002
 ```
 
 The API is now running at:
 - **API Base URL**: `http://localhost:8000`
 - **Interactive Swagger Docs**: `http://localhost:8000/docs`
 - **ReDoc Documentation**: `http://localhost:8000/redoc`
+
+### Deploy on Render
+
+This repository includes a root-level `render.yaml` Blueprint and `backend/Dockerfile`. In Render, create a Blueprint from the repository root. The service uses the free plan, builds the backend Docker image, and checks `/api/health`. The image installs Tesseract with English and Khmer traineddata and fails its build if either language is missing. The Blueprint sets `TESSERACT_LANG=khm+eng`, `TESSERACT_CMD=/usr/bin/tesseract`, and open CORS for the public, unauthenticated API. The container listens on Render's `$PORT`.
+
+After Render deploys, copy the backend's `https://...onrender.com` URL into the frontend host's build environment as `NEXT_PUBLIC_API_URL`, then rebuild/redeploy the frontend. The frontend must use the deployed URL in production; its `localhost:8001` fallback is for local development.
+
+For local development without installing system OCR packages, run the Docker image on port 8001:
+
+```bash
+docker build -t quickocr-backend ./backend
+docker run -d --name quickocr-backend-local --restart unless-stopped \\
+  -p 127.0.0.1:8001:8000 \\
+  -e TESSERACT_LANG=khm+eng \\
+  -e TESSERACT_CMD=/usr/bin/tesseract \\
+  quickocr-backend
+```
 
 ---
 

@@ -208,7 +208,7 @@ export default function HistoryPage() {
             FAILED TO RETRIEVE HISTORY
           </h3>
           <p className="text-xs font-sans text-[#8B9690] mb-6">
-            Could not connect to FastAPI server at http://localhost:8002. Please ensure the backend is running.
+            Could not connect to FastAPI server at http://localhost:8001. Please ensure the backend is running.
           </p>
           <button
             onClick={() => refetch()}

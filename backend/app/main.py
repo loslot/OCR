@@ -40,7 +40,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
+    # The browser client uses no cookies. Wildcard CORS is therefore valid for
+    # the public, unauthenticated OCR API when configured for Render.
+    allow_credentials="*" not in settings.CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
