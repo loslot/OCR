@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #080b0a;
+  --foreground: #f5f7f5;
+  --card-bg: #111816;
+  --border-color: #1a2720;
+  --neon-green: #39ff14;
+  --accent-green: #00e676;
+  --muted-text: #8b9690;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  overflow-x: hidden;
+  selection-background-color: rgba(57, 255, 20, 0.3);
+  selection-color: #39ff14;
+}
+
+::selection {
+  background: rgba(57, 255, 20, 0.25);
+  color: #39ff14;
+}
+
+/* Cyber Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #080b0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a2720;
+  border-radius: 3px;
+  border: 1px solid rgba(57, 255, 20, 0.15);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #25392e;
+  border-color: rgba(57, 255, 20, 0.4);
+}
+
+/* Cyber corner cuts */
+.cyber-corner {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+}
+
+.cyber-corner-lg {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 16px) 0,
+    100% 16px,
+    100% 100%,
+    16px 100%,
+    0 calc(100% - 16px)
+  );
+}
+
+/* Subtle cyber scanlines */
+.cyber-scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.01),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.01)
+  );
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Glass card styling */
+.cyber-glass {
+  background: rgba(17, 24, 22, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(57, 255, 20, 0.12);
+}
+
+.cyber-glass:hover {
+  border-color: rgba(57, 255, 20, 0.35);
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.08);
+}
