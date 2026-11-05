@@ -26,7 +26,7 @@ export const fileUploadSchema = z.object({
       const hasValidType = file.type ? ALLOWED_IMAGE_TYPES.includes(file.type) : true;
       return hasValidExt && hasValidType;
     }, "Unsupported format. Only PNG, JPG, JPEG, and WEBP images are supported."),
-  language: z.enum(["en", "km"]).default("en"),
+  language: z.enum(["en", "km", "km+en"]).default("en"),
 });
 
 export type FileUploadFormValues = z.infer<typeof fileUploadSchema>;

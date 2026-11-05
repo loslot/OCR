@@ -140,7 +140,7 @@ export default function HistoryPage() {
               <Filter className="w-3 h-3 text-[#39FF14]" />
               LANG:
             </span>
-            {["all", "en", "km"].map((lang) => (
+            {["all", "en", "km", "km+en"].map((lang) => (
               <button
                 key={lang}
                 onClick={() => setSelectedLanguageFilter(lang)}

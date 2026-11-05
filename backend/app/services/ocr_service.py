@@ -1,13 +1,14 @@
 import logging
 import time
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
-import easyocr
 import numpy as np
+import pytesseract
 from fastapi import HTTPException, status
+from pytesseract import Output
+from pytesseract.pytesseract import TesseractError, TesseractNotFoundError
 
 from app.core.config import settings
 
@@ -15,120 +16,146 @@ logger = logging.getLogger(__name__)
 
 
 class OCRService:
-    """Service to handle EasyOCR model initialization and text extraction
-
-    with OpenCV image preprocessing.
-    """
+    """Tesseract OCR with OpenCV preprocessing and line-level result details."""
 
     _instance: Optional["OCRService"] = None
-    _reader_en: Optional[easyocr.Reader] = None
-    _reader_km: Optional[easyocr.Reader] = None
 
     def __new__(cls) -> "OCRService":
-        """Singleton pattern: ensure OCRService is created only once."""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._initialize_readers()
+            cls._instance._configure()
         return cls._instance
 
-    def _initialize_readers(self) -> None:
-        """Initialize EasyOCR reader once at startup."""
-        logger.info("Initializing EasyOCR reader (English)...")
+    def _configure(self) -> None:
+        """Set the executable configured by the operator; no machine path is assumed."""
+        pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_CMD
+
+    def _tessdata_config(self) -> str:
+        if settings.TESSDATA_DIR:
+            return f'--tessdata-dir "{settings.TESSDATA_DIR}"'
+        return ""
+
+    def _available_languages(self) -> set[str]:
         try:
-            self._reader_en = easyocr.Reader(
-                ["en"],
-                gpu=settings.OCR_GPU,
-                verbose=False,
-            )
-            logger.info("EasyOCR English reader loaded successfully.")
-        except Exception as e:
-            logger.error(f"Failed to initialize EasyOCR reader: {e}")
-            raise RuntimeError(f"OCR model initialization failed: {e}")
+            return set(pytesseract.get_languages(config=self._tessdata_config()))
+        except TesseractNotFoundError as exc:
+            logger.error("Tesseract executable '%s' was not found", settings.TESSERACT_CMD)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=("Tesseract OCR is not installed or could not be found. "
+                        "Install Tesseract and set TESSERACT_CMD if it is outside PATH."),
+            ) from exc
+        except TesseractError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Could not read Tesseract language data: {exc}",
+            ) from exc
 
-        # Check if custom Khmer model weights exist
-        khmer_model_path = settings.MODELS_DIR / "km.pth"
-        if khmer_model_path.exists():
-            try:
-                logger.info("Custom Khmer model weights found. Initializing Khmer reader...")
-                self._reader_km = easyocr.Reader(
-                    ["en"],
-                    recog_network="km",
-                    model_storage_directory=str(settings.MODELS_DIR),
-                    user_network_directory=str(settings.MODELS_DIR),
-                    gpu=settings.OCR_GPU,
-                    verbose=False,
-                )
-                logger.info("Khmer reader loaded successfully.")
-            except Exception as e:
-                logger.warning(f"Could not load custom Khmer reader: {e}")
-                self._reader_km = None
-        else:
-            self._reader_km = None
-
-    def get_reader(self, language: str = "en") -> easyocr.Reader:
-        """Retrieve the appropriate reader for the requested language."""
-        lang = language.lower().strip()
-        if lang in ("en", "english"):
-            if self._reader_en is None:
-                self._initialize_readers()
-            return self._reader_en
-
-        if lang in ("km", "khmer"):
-            if self._reader_km is not None:
-                return self._reader_km
-            # If custom Khmer model weights are not installed
+    def get_language(self, language: str = "en") -> Tuple[str, str]:
+        """Return the Tesseract language code and canonical API language label."""
+        lang = (language or settings.DEFAULT_LANGUAGE).strip().lower().replace("_", "+")
+        language_map = {
+            "en": (settings.TESSERACT_LANG_ENGLISH, "en"),
+            "english": (settings.TESSERACT_LANG_ENGLISH, "en"),
+            "eng": (settings.TESSERACT_LANG_ENGLISH, "en"),
+            "km": (settings.TESSERACT_LANG_KHMER, "km"),
+            "khmer": (settings.TESSERACT_LANG_KHMER, "km"),
+            "khm": (settings.TESSERACT_LANG_KHMER, "km"),
+            "km+en": (settings.TESSERACT_LANG_MIXED, "km+en"),
+            "en+km": (settings.TESSERACT_LANG_MIXED, "km+en"),
+            "khm+eng": (settings.TESSERACT_LANG_MIXED, "km+en"),
+            "eng+khm": (settings.TESSERACT_LANG_MIXED, "km+en"),
+            "mixed": (settings.TESSERACT_LANG_MIXED, "km+en"),
+        }
+        if lang not in language_map:
+            supported = ", ".join(settings.SUPPORTED_LANGUAGES)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=(
-                    "EasyOCR does not bundle Khmer ('km') natively. "
-                    "To enable Khmer OCR, place custom trained 'km.pth' and 'km.yaml' "
-                    f"weights into '{settings.MODELS_DIR}'. "
-                    "Alternatively, select language='en'."
-                ),
+                detail=f"Unsupported language '{language}'. Supported languages: {supported}",
             )
 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                f"Unsupported language '{language}'. "
-                f"Supported languages: {', '.join(settings.SUPPORTED_LANGUAGES)}"
-            ),
-        )
+        tesseract_lang, canonical = language_map[lang]
+        available = self._available_languages()
+        missing = [code for code in tesseract_lang.split("+") if code not in available]
+        if missing:
+            if settings.TESSERACT_LANG_KHMER in missing:
+                detail = ("Khmer language data ('khm') is missing. Install the Tesseract Khmer "
+                          "traineddata package or set TESSDATA_DIR to a directory containing khm.traineddata.")
+            elif settings.TESSERACT_LANG_ENGLISH in missing:
+                detail = ("English language data ('eng') is missing. Install the Tesseract English "
+                          "traineddata package or set TESSDATA_DIR to a directory containing eng.traineddata.")
+            else:
+                detail = f"Tesseract language data is missing: {', '.join(missing)}."
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=detail)
+        return tesseract_lang, canonical
 
     @staticmethod
     def preprocess_image(image_bytes: bytes) -> np.ndarray:
-        """Preprocess uploaded image using OpenCV for optimal OCR extraction.
-
-        Applies:
-        - Decoding image from memory
-        - Conversion to RGB
-        - Contrast enhancement / noise reduction if necessary
-        """
-        np_arr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
-        if img is None:
+        """Decode and prepare a page using grayscale, denoising, thresholding and scaling."""
+        if not image_bytes:
+            raise HTTPException(status_code=400, detail="Uploaded image is empty.")
+        image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
+        if image is None or image.size == 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Could not decode image. Please ensure the file is a valid image.",
+                detail="Could not decode image. Please upload a valid, non-corrupted image.",
             )
 
-        # Convert OpenCV BGR format to RGB for EasyOCR
-        rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        # Check resolution; if image is extremely small, resize to improve recognition
-        height, width = rgb_img.shape[:2]
-        if height < 100 or width < 100:
-            scale = max(2.0, 300.0 / min(height, width))
-            rgb_img = cv2.resize(
-                rgb_img,
-                None,
-                fx=scale,
-                fy=scale,
-                interpolation=cv2.INTER_CUBIC,
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        denoised = cv2.fastNlMeansDenoising(
+            gray, None, h=settings.OCR_DENOISE_STRENGTH, templateWindowSize=7, searchWindowSize=21
+        )
+        height = denoised.shape[0]
+        target_height = max(1, settings.OCR_TARGET_HEIGHT)
+        scale = min(3.0, target_height / height) if height < target_height else 1.0
+        if scale != 1.0:
+            denoised = cv2.resize(
+                denoised, None, fx=scale, fy=scale,
+                interpolation=cv2.INTER_CUBIC if scale > 1 else cv2.INTER_AREA,
             )
 
-        return rgb_img
+        # Adaptive threshold handles uneven page lighting while preserving Khmer marks.
+        block_size = max(3, min(41, (min(denoised.shape[:2]) // 30) | 1))
+        return cv2.adaptiveThreshold(
+            denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, block_size, 11
+        )
+
+    @staticmethod
+    def _format_details(data: Dict[str, List[Any]]) -> List[Dict[str, Any]]:
+        """Group Tesseract word output into lines while retaining response box shape."""
+        grouped: Dict[tuple, Dict[str, Any]] = {}
+        count = len(data.get("text", []))
+        for i in range(count):
+            word = str(data["text"][i]).strip()
+            try:
+                confidence = float(data["conf"][i])
+            except (TypeError, ValueError):
+                continue
+            if not word or confidence < 0:
+                continue
+            key = tuple(data[name][i] for name in ("page_num", "block_num", "par_num", "line_num"))
+            left, top = int(data["left"][i]), int(data["top"][i])
+            right, bottom = left + int(data["width"][i]), top + int(data["height"][i])
+            if key not in grouped:
+                grouped[key] = {"words": [], "confidence": [], "left": left, "top": top,
+                                "right": right, "bottom": bottom}
+            line = grouped[key]
+            line["words"].append(word)
+            line["confidence"].append(confidence / 100.0)
+            line["left"] = min(line["left"], left)
+            line["top"] = min(line["top"], top)
+            line["right"] = max(line["right"], right)
+            line["bottom"] = max(line["bottom"], bottom)
+
+        details = []
+        for line in grouped.values():
+            x1, y1, x2, y2 = line["left"], line["top"], line["right"], line["bottom"]
+            details.append({
+                "text": " ".join(line["words"]),
+                "confidence": round(sum(line["confidence"]) / len(line["confidence"]), 4),
+                "box": [[x1, y1], [x2, y1], [x2, y2], [x1, y2]],
+            })
+        return details
 
     def extract_text(
         self,
@@ -137,64 +164,46 @@ class OCRService:
         image_bytes: bytes,
         language: str = "en",
     ) -> Dict[str, Any]:
-        """Perform OCR extraction on image bytes and return formatted results."""
         start_time = time.perf_counter()
-
-        # Get the initialized reader
-        reader = self.get_reader(language)
-
-        # Preprocess image with OpenCV
-        preprocessed = self.preprocess_image(image_bytes)
-
-        # Execute OCR reading
+        tesseract_language, canonical_language = self.get_language(language)
+        processed = self.preprocess_image(image_bytes)
+        config = f"--psm {settings.TESSERACT_PSM} {self._tessdata_config()}".strip()
         try:
-            raw_results = reader.readtext(preprocessed)
-        except Exception as e:
-            logger.error(f"OCR inference failed for document {document_id}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="OCR processing encountered an unexpected error.",
+            data = pytesseract.image_to_data(
+                processed, lang=tesseract_language, config=config, output_type=Output.DICT
             )
+        except TesseractNotFoundError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="Tesseract OCR is not installed or could not be found. Install it and configure TESSERACT_CMD.",
+            ) from exc
+        except TesseractError as exc:
+            logger.exception("Tesseract failed for document %s", document_id)
+            raise HTTPException(status_code=500, detail=f"Tesseract OCR processing failed: {exc}") from exc
+        except Exception as exc:
+            logger.exception("OCR inference failed for document %s", document_id)
+            raise HTTPException(
+                status_code=500, detail="OCR processing encountered an unexpected error."
+            ) from exc
 
-        details: List[Dict[str, Any]] = []
-        extracted_lines: List[str] = []
-        total_confidence = 0.0
-
-        for item in raw_results:
-            bbox, text, conf = item
-            clean_text = str(text).strip()
-            if not clean_text:
-                continue
-
-            float_conf = round(float(conf), 4)
-            # Convert bbox coordinates to standard Python int pairs [[x, y], ...]
-            formatted_box = [[int(pt[0]), int(pt[1])] for pt in bbox]
-
-            details.append({
-                "text": clean_text,
-                "confidence": float_conf,
-                "box": formatted_box,
-            })
-            extracted_lines.append(clean_text)
-            total_confidence += float_conf
-
-        line_count = len(details)
-        avg_confidence = round(total_confidence / line_count, 4) if line_count > 0 else 0.0
-        combined_text = "\n".join(extracted_lines)
-        processing_time = round(time.perf_counter() - start_time, 4)
-
+        details = self._format_details(data)
+        if not details:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="No text was detected in the image. Try a clearer, higher-resolution image.",
+            )
+        confidence = round(sum(item["confidence"] for item in details) / len(details), 4)
         return {
             "document_id": document_id,
             "filename": filename,
-            "extracted_text": combined_text,
-            "confidence": avg_confidence,
-            "language": language,
+            "extracted_text": "\n".join(item["text"] for item in details),
+            "confidence": confidence,
+            "language": canonical_language,
             "status": "completed",
-            "processing_time": processing_time,
+            "processing_time": round(time.perf_counter() - start_time, 4),
             "created_at": datetime.now(timezone.utc).isoformat(),
             "details": details,
         }
 
 
-# Global service instance initialized once
 ocr_service = OCRService()

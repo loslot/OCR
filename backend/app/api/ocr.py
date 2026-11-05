@@ -18,21 +18,23 @@ router = APIRouter(prefix="/ocr", tags=["OCR"])
     response_model=OCRResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Upload image and extract text",
-    description="Accepts an image file (PNG, JPG, JPEG, WEBP up to 10MB) and extracts text using EasyOCR.",
+    description="Accepts an image file (PNG, JPG, JPEG, WEBP up to 10MB) and extracts text using Tesseract OCR.",
     responses={
         400: {"model": ErrorResponse, "description": "Invalid file format or unsupported language"},
         413: {"model": ErrorResponse, "description": "File size exceeds 10MB"},
+        422: {"model": ErrorResponse, "description": "Image contains no recognized text"},
         500: {"model": ErrorResponse, "description": "Internal OCR processing error"},
+        503: {"model": ErrorResponse, "description": "Tesseract or requested language data is unavailable"},
     },
 )
 async def extract_text_from_image(
     file: UploadFile = File(..., description="Image file to process"),
     language: Optional[str] = Form(
         "en",
-        description="OCR language to use ('en' for English, 'km' for Khmer)",
+        description="OCR language: 'en', 'km', or 'km+en' for mixed Khmer and English",
     ),
 ) -> OCRResponse:
-    """Upload an image file, store it locally, run EasyOCR with OpenCV
+    """Upload an image file, store it locally, run Tesseract with OpenCV
 
     preprocessing, and save the result JSON.
     """

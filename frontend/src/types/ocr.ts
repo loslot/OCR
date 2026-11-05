@@ -38,4 +38,4 @@ export interface ApiErrorResponse {
   detail: string;
 }
 
-export type SupportedLanguage = "en" | "km";
+export type SupportedLanguage = "en" | "km" | "km+en";

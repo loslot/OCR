@@ -59,7 +59,7 @@ export default function OCRResult({
           SCANNER STANDBY
         </h4>
         <p className="text-sm text-[#8B9690] max-w-sm font-sans">
-          Upload an image on the left panel and click &ldquo;Extract Text Now&rdquo; to decrypt characters with EasyOCR.
+          Upload an image on the left panel and click &ldquo;Extract Text Now&rdquo; to recognize text with Tesseract OCR.
         </p>
 
         <div className="mt-6 flex items-center gap-2 text-xs font-mono text-[#8B9690]/80">

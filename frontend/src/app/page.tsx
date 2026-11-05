@@ -115,7 +115,7 @@ export default function LandingPage() {
                     [*] Initializing OpenCV bilateral filter... Done [0.08s]
                   </div>
                   <div className="text-[#00E676]">
-                    [*] Executing EasyOCR CRAFT text detector tensor... Done [0.34s]
+                    [*] Executing Tesseract OCR text recognition... Done [0.34s]
                   </div>
 
                   <div className="pt-2 border-t border-[#1A2720] space-y-2">
@@ -266,7 +266,7 @@ export default function LandingPage() {
                 {
                   step: "03",
                   title: "NEURAL INFERENCE",
-                  desc: "EasyOCR singleton evaluates character heatmaps and reconstructs lines into coherent textual structures.",
+                  desc: "Tesseract OCR recognizes text and returns line-level confidence and bounding boxes.",
                 },
                 {
                   step: "04",

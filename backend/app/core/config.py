@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Set, Union
+from typing import List, Optional, Set, Union
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -23,7 +23,6 @@ class Settings(BaseSettings):
     STORAGE_DIR: Path = BASE_DIR / "storage"
     UPLOAD_DIR: Path = STORAGE_DIR / "uploads"
     RESULTS_DIR: Path = STORAGE_DIR / "results"
-    MODELS_DIR: Path = STORAGE_DIR / "models"
 
     # Upload Constraints (Maximum 10MB)
     MAX_FILE_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
@@ -37,8 +36,15 @@ class Settings(BaseSettings):
 
     # OCR Settings
     DEFAULT_LANGUAGE: str = "en"
-    SUPPORTED_LANGUAGES: List[str] = ["en", "km"]
-    OCR_GPU: bool = False
+    SUPPORTED_LANGUAGES: List[str] = ["en", "km", "km+en"]
+    TESSERACT_CMD: str = "tesseract"
+    TESSDATA_DIR: Optional[Path] = None
+    TESSERACT_LANG_ENGLISH: str = "eng"
+    TESSERACT_LANG_KHMER: str = "khm"
+    TESSERACT_LANG_MIXED: str = "khm+eng"
+    TESSERACT_PSM: int = 6
+    OCR_DENOISE_STRENGTH: int = 10
+    OCR_TARGET_HEIGHT: int = 1800
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
@@ -60,4 +66,3 @@ settings = Settings()
 # Ensure required storage directories exist
 settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 settings.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-settings.MODELS_DIR.mkdir(parents=True, exist_ok=True)

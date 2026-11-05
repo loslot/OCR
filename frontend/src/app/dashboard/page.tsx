@@ -103,7 +103,7 @@ export default function DashboardPage() {
         <StatCard
           title="Documents Processed"
           value={isHistoryLoading ? "..." : totalDocuments}
-          subtitle="Total files analyzed by EasyOCR"
+          subtitle="Total files analyzed by Tesseract OCR"
           icon={<FileCheck className="w-5 h-5" />}
         />
         <StatCard

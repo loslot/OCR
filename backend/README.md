@@ -1,14 +1,14 @@
 # QuickOCR - Backend API
 
-A lightweight, modular, and fast Optical Character Recognition (OCR) backend built with **FastAPI**, **EasyOCR**, and **OpenCV**, designed to pair seamlessly with a Next.js frontend.
+A lightweight, modular Optical Character Recognition (OCR) backend built with **FastAPI**, **Tesseract OCR**, and **OpenCV**, designed to pair seamlessly with a Next.js frontend.
 
 ---
 
 ## 🚀 Features
 
 - **Image Upload & Validation**: Supports PNG, JPG, JPEG, and WEBP formats with a 10MB size limit and UUID generation.
-- **OCR Text Extraction**: Powered by EasyOCR with single-instance initialization and OpenCV preprocessing.
-- **Multilingual Support**: Supports English (`en`) out of the box, with built-in extensibility for Khmer (`km`) via custom model weights.
+- **OCR Text Extraction**: Powered by Tesseract with grayscale conversion, denoising, thresholding, and resizing.
+- **Multilingual Support**: Supports English (`en`), Khmer (`km`), and mixed Khmer/English (`km+en`) using Tesseract traineddata.
 - **File-Based Storage**: Completely database-free! Stores images in `storage/uploads/` and metadata/results in `storage/results/` as JSON.
 - **RESTful Endpoints**: Full CRUD endpoints for document upload, extraction, history, retrieval, and deletion.
 - **Next.js Ready**: Pre-configured CORS for Next.js frontend running on `http://localhost:3000`.
@@ -28,7 +28,7 @@ backend/
 │   │   └── ocr.py               # REST API endpoints (/extract, /history, /{id}, DELETE)
 │   ├── services/
 │   │   ├── __init__.py
-│   │   ├── ocr_service.py       # EasyOCR singleton reader & OpenCV preprocessing
+│   │   ├── ocr_service.py       # Tesseract invocation & OpenCV preprocessing
 │   │   └── file_service.py      # File validation, uploads, and JSON storage
 │   ├── schemas/
 │   │   ├── __init__.py
@@ -39,7 +39,6 @@ backend/
 ├── storage/
 │   ├── uploads/                 # Uploaded image files
 │   ├── results/                 # Extracted OCR results (JSON format)
-│   └── models/                  # Custom OCR model weights (e.g. Khmer)
 ├── .env.example                 # Environment variables template
 ├── .gitignore
 ├── requirements.txt             # Python project dependencies
@@ -53,6 +52,23 @@ backend/
 ### 1. Prerequisites
 - **Python**: Python 3.10 – 3.12 is recommended.
 - **pip** or **uv** package manager.
+- **Tesseract OCR 5** with English and Khmer traineddata installed separately from Python packages.
+
+Install Tesseract and language data with your OS package manager:
+
+**Debian / Ubuntu:**
+```bash
+sudo apt update
+sudo apt install tesseract-ocr tesseract-ocr-eng tesseract-ocr-khm
+```
+
+**macOS (Homebrew):**
+```bash
+brew install tesseract
+brew install tesseract-lang
+```
+
+On Windows, install Tesseract using the [official installation guidance](https://github.com/tesseract-ocr/tessdoc/blob/main/Installation.md), then add `eng.traineddata` and `khm.traineddata` to its tessdata folder. The same official guide has install notes for other Linux distributions. Verify with `tesseract --list-langs`; both `eng` and `khm` must be listed. If the executable is outside `PATH`, set `TESSERACT_CMD`; set `TESSDATA_DIR` to the folder containing traineddata files when needed. The language pack names above follow the [Tesseract installation guide](https://github.com/tesseract-ocr/tessdoc/blob/main/Installation.md).
 
 ### 2. Create a Virtual Environment
 
@@ -86,18 +102,13 @@ source .venv/bin/activate
 
 For standard CPU execution (recommended for laptops / general servers):
 ```bash
-# Install PyTorch (CPU optimized)
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-
-# Install FastAPI, EasyOCR, OpenCV, and other requirements
+# Install FastAPI, pytesseract, OpenCV, and other requirements
 pip install -r requirements.txt
 ```
 
-*(Note: On first run, EasyOCR will automatically download standard detection and recognition models into `~/.EasyOCR/model/`)*.
-
 ### 4. Configure Environment Variables (Optional)
 
-Copy `.env.example` to `.env` if you wish to customize CORS origins, server port, or GPU settings:
+Copy `.env.example` to `.env` if you wish to customize CORS origins or OCR settings:
 
 ```bash
 cp .env.example .env
@@ -110,7 +121,14 @@ VERSION="1.0.0"
 API_PREFIX="/api"
 CORS_ORIGINS="http://localhost:3000,http://127.0.0.1:3000"
 DEFAULT_LANGUAGE="en"
-OCR_GPU=false
+TESSERACT_CMD="tesseract"
+# TESSDATA_DIR="/path/to/tessdata" # optional
+TESSERACT_LANG_ENGLISH="eng"
+TESSERACT_LANG_KHMER="khm"
+TESSERACT_LANG_MIXED="khm+eng"
+TESSERACT_PSM=6
+OCR_DENOISE_STRENGTH=10
+OCR_TARGET_HEIGHT=1800
 ```
 
 ### 5. Start the Development Server
@@ -143,7 +161,7 @@ The API is now running at:
     "status": "ok",
     "service": "QuickOCR API",
     "version": "1.0.0",
-    "supported_languages": ["en", "km"]
+    "supported_languages": ["en", "km", "km+en"]
   }
   ```
 
@@ -154,7 +172,7 @@ The API is now running at:
 - **Content-Type**: `multipart/form-data`
 - **Parameters**:
   - `file`: Image file (PNG, JPG, JPEG, WEBP, max 10MB) [Required]
-  - `language`: `en` (default) or `km` [Optional]
+  - `language`: `en` (default), `km`, or `km+en` [Optional]. `khm+eng` is also accepted.
 - **Example cURL**:
   ```bash
   curl -X POST http://localhost:8000/api/ocr/extract \
@@ -258,14 +276,22 @@ The API is now running at:
 
 ---
 
-## 🇰🇭 Khmer Language Support
+## OCR languages and preprocessing
 
-EasyOCR provides native pre-trained weights for 80+ Latin and Asian languages. Khmer (`km`) uses a distinct script with stacked diacritics and sub-consonants, which requires custom recognition weights:
+The frontend's existing `en` and `km` controls remain valid. `en` selects English only; `km` selects Khmer only; send `km+en` for mixed documents. The API also accepts `khm+eng`. Configure Tesseract model codes with `TESSERACT_LANG_ENGLISH`, `TESSERACT_LANG_KHMER`, and `TESSERACT_LANG_MIXED`.
 
-1. Place your trained model file (`km.pth`) and model configuration (`km.yaml`) inside `backend/storage/models/`.
-2. When starting up, the service automatically detects `backend/storage/models/km.pth` and initializes the Khmer reader.
-3. Pass `language="km"` in `POST /api/ocr/extract` to extract Khmer text.
-4. If no custom model is installed and `km` is requested, the API returns a friendly `400 Bad Request` explaining where to place the weights, without crashing the server.
+`TESSERACT_PSM=6` treats an image as a uniform text block. Set it to another Tesseract page segmentation mode for different layouts. `OCR_DENOISE_STRENGTH` adjusts noise reduction and `OCR_TARGET_HEIGHT` controls upscaling for small images. Recognition quality depends on image quality, layout, and installed traineddata; accuracy is not guaranteed.
+
+Missing Tesseract or language data returns a clear `503` error. Invalid/corrupted images return `400`, and images with no recognized text return `422`.
+
+## Tests
+
+Install the test-only HTTP client and run the backend unit and API integration tests from `backend/`:
+
+```bash
+pip install -r requirements-dev.txt
+python -m unittest discover -s tests -v
+```
 
 ---
 
@@ -276,6 +302,8 @@ EasyOCR provides native pre-trained weights for 80+ Latin and Asian languages. K
 | **200 OK** | Success | Health check, fetch history, get document, delete document |
 | **201 Created** | Created | Successful OCR image extraction |
 | **400 Bad Request** | Client error | Unsupported file extension (e.g. `.gif`, `.pdf`), invalid image bytes |
+| **422 Unprocessable Entity** | No recognized text | Image is valid but Tesseract found no text |
 | **404 Not Found** | Resource not found | Document UUID does not exist |
 | **413 Content Too Large** | Payload too large | Uploaded file exceeds 10MB |
+| **503 Service Unavailable** | OCR dependency missing | Tesseract executable or requested language data is unavailable |
 | **500 Server Error** | Internal error | Generic error message returned to client; internal tracebacks are masked |

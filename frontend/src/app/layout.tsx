@@ -20,7 +20,7 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "QuickOCR // Cyber Neural OCR Engine",
   description:
-    "AI-powered text extraction from images. Fast, local, private, and powered by EasyOCR and OpenCV.",
+    "AI-powered text extraction from images. Fast, local, private, and powered by Tesseract OCR and OpenCV.",
 };
 
 export default function RootLayout({

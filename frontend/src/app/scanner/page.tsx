@@ -116,7 +116,7 @@ export default function ScannerPage() {
           OPTICAL SCANNER WORKSPACE
         </h1>
         <p className="mt-1 text-sm text-[#8B9690] font-sans">
-          Upload an image on the left to extract text and bounding box metadata with EasyOCR.
+          Upload an image on the left to extract text and bounding box metadata with Tesseract OCR.
         </p>
       </div>
 

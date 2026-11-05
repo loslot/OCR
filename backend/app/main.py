@@ -8,7 +8,6 @@ from fastapi.responses import JSONResponse
 from app.api.ocr import router as ocr_router
 from app.core.config import settings
 from app.schemas.ocr_schema import ErrorResponse, HealthResponse
-from app.services.ocr_service import ocr_service
 
 # Configure application logging
 logging.basicConfig(
@@ -20,10 +19,8 @@ logger = logging.getLogger("quickocr")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Lifespan event handler to ensure OCR engine is initialized once at startup."""
+    """Application lifespan; Tesseract is validated when OCR is requested."""
     logger.info("Starting QuickOCR backend...")
-    # Pre-warm OCR reader singleton
-    _ = ocr_service.get_reader("en")
     logger.info("QuickOCR backend startup complete.")
     yield
     logger.info("QuickOCR backend shutting down...")
@@ -32,7 +29,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Backend API for QuickOCR — lightweight, local image-to-text extraction using EasyOCR and OpenCV.",
+    description="Backend API for QuickOCR — local image-to-text extraction using Tesseract OCR and OpenCV.",
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",

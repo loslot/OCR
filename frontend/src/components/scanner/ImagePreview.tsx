@@ -128,6 +128,18 @@ export default function ImagePreview({
             >
               KM (Khmer)
             </button>
+            <button
+              type="button"
+              onClick={() => onLanguageChange("km+en")}
+              disabled={isProcessing}
+              className={`px-3 py-1.5 rounded-lg border transition-all ${
+                selectedLanguage === "km+en"
+                  ? "bg-[#39FF14]/15 border-[#39FF14] text-[#39FF14] font-semibold shadow-[0_0_10px_rgba(57,255,20,0.2)]"
+                  : "bg-[#080B0A] border-[#1A2720] text-[#8B9690] hover:text-[#F5F7F5]"
+              }`}
+            >
+              KM + EN
+            </button>
           </div>
         </div>
 
