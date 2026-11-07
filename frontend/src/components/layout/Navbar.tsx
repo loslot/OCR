@@ -11,7 +11,7 @@ interface NavbarProps {
 
 export default function Navbar({ onToggleMobileSidebar }: NavbarProps) {
   const pathname = usePathname();
-  const { isSuccess } = useGetHealthQuery();
+  const { isSuccess, isLoading } = useGetHealthQuery();
 
   const getPageTitle = () => {
     if (pathname === "/dashboard") return "OVERVIEW_DASHBOARD";
@@ -47,12 +47,28 @@ export default function Navbar({ onToggleMobileSidebar }: NavbarProps) {
         <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-[#111816] border border-[#1A2720] text-xs font-mono">
           <span
             className={`w-2 h-2 rounded-full ${
-              isSuccess ? "bg-[#39FF14] shadow-[0_0_8px_#39FF14]" : "bg-[#FF4D4D]"
+              isSuccess
+                ? "bg-[#39FF14] shadow-[0_0_8px_#39FF14]"
+                : isLoading
+                ? "bg-[#FFB020] animate-ping"
+                : "bg-[#FF4D4D]"
             }`}
           />
           <span className="text-[#8B9690]">API:</span>
-          <span className={isSuccess ? "text-[#39FF14]" : "text-[#FF4D4D]"}>
-            {isSuccess ? "LINK_ESTABLISHED" : "DISCONNECTED"}
+          <span
+            className={
+              isSuccess
+                ? "text-[#39FF14]"
+                : isLoading
+                ? "text-[#FFB020]"
+                : "text-[#FF4D4D]"
+            }
+          >
+            {isSuccess
+              ? "LINK_ESTABLISHED"
+              : isLoading
+              ? "CONNECTING..."
+              : "DISCONNECTED"}
           </span>
         </div>
 

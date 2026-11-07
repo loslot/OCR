@@ -136,7 +136,7 @@ OCR_TARGET_HEIGHT=1800
 From the `backend` directory, run:
 
 ```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8002
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 ```
 
 The API is now running at:

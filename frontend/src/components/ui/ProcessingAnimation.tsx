@@ -17,12 +17,21 @@ const TELEMETRY_LOGS = [
 
 export default function ProcessingAnimation() {
   const [logIndex, setLogIndex] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const logInterval = setInterval(() => {
       setLogIndex((prev) => (prev + 1) % TELEMETRY_LOGS.length);
     }, 450);
-    return () => clearInterval(interval);
+
+    const timerInterval = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+
+    return () => {
+      clearInterval(logInterval);
+      clearInterval(timerInterval);
+    };
   }, []);
 
   return (
@@ -89,15 +98,27 @@ export default function ProcessingAnimation() {
         </p>
       </div>
 
-      {/* Terminal Telemetry Logs */}
-      <div className="relative z-10 p-3 rounded-lg bg-[#050706] border border-[#1A2720] font-mono text-xs">
-        <div className="flex items-center gap-2 text-[#8B9690] mb-2 border-b border-[#1A2720]/60 pb-1.5">
-          <Terminal className="w-3.5 h-3.5 text-[#39FF14]" />
-          <span className="text-[10px] uppercase tracking-wider">OCR_PIPELINE_STDOUT</span>
-        </div>
-        <div className="text-[#39FF14] flex items-center gap-2">
-          <span className="text-[#8B9690]">&gt;</span>
-          <span className="truncate">{TELEMETRY_LOGS[logIndex]}</span>
+      {/* Terminal Telemetry Logs & Cold Start Notice */}
+      <div className="relative z-10 space-y-2">
+        {elapsedSeconds > 5 && (
+          <div className="p-2.5 rounded-lg bg-[#FFB020]/10 border border-[#FFB020]/30 text-[#FFB020] text-xs font-mono flex items-center justify-between">
+            <span>Render cold-start in progress: Initializing backend container...</span>
+            <span className="font-semibold">{elapsedSeconds}s</span>
+          </div>
+        )}
+
+        <div className="p-3 rounded-lg bg-[#050706] border border-[#1A2720] font-mono text-xs">
+          <div className="flex items-center justify-between text-[#8B9690] mb-2 border-b border-[#1A2720]/60 pb-1.5">
+            <div className="flex items-center gap-2">
+              <Terminal className="w-3.5 h-3.5 text-[#39FF14]" />
+              <span className="text-[10px] uppercase tracking-wider">OCR_PIPELINE_STDOUT</span>
+            </div>
+            <span className="text-[10px] text-[#39FF14]">{elapsedSeconds}s ELAPSED</span>
+          </div>
+          <div className="text-[#39FF14] flex items-center gap-2">
+            <span className="text-[#8B9690]">&gt;</span>
+            <span className="truncate">{TELEMETRY_LOGS[logIndex]}</span>
+          </div>
         </div>
       </div>
     </div>

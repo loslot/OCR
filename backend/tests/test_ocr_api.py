@@ -51,6 +51,84 @@ class OCRAPIIntegrationTests(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("Unsupported file format", response.json()["detail"])
 
+    def test_health_check_endpoint(self):
+        client = TestClient(app)
+        response = client.get("/api/health")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "ok")
+        self.assertIn("supported_languages", data)
+        self.assertIn("en", data["supported_languages"])
+
+    def test_cors_preflight_for_vercel_frontend(self):
+        client = TestClient(app)
+        response = client.options(
+            "/api/ocr/extract",
+            headers={
+                "Origin": "https://ocr-g3tg.vercel.app",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.headers.get("access-control-allow-origin"),
+            "https://ocr-g3tg.vercel.app",
+        )
+
+    def test_cors_preflight_for_vercel_preview(self):
+        client = TestClient(app)
+        response = client.options(
+            "/api/ocr/extract",
+            headers={
+                "Origin": "https://ocr-preview-branch-test.vercel.app",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.headers.get("access-control-allow-origin"),
+            "https://ocr-preview-branch-test.vercel.app",
+        )
+
+    def test_cors_preflight_rejects_unauthorized_origin(self):
+        client = TestClient(app)
+        response = client.options(
+            "/api/ocr/extract",
+            headers={
+                "Origin": "https://malicious-site.example.com",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type",
+            },
+        )
+        self.assertNotEqual(
+            response.headers.get("access-control-allow-origin"),
+            "https://malicious-site.example.com",
+        )
+
+    def test_empty_file_upload_rejected(self):
+        client = TestClient(app)
+        response = client.post(
+            "/api/ocr/extract",
+            files={"file": ("empty.png", b"", "image/png")},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("empty", response.json()["detail"].lower())
+
+    def test_document_not_found(self):
+        client = TestClient(app)
+        response = client.get("/api/ocr/non-existent-uuid")
+        self.assertEqual(response.status_code, 404)
+
+    def test_history_endpoint(self):
+        client = TestClient(app)
+        response = client.get("/api/ocr/history")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("total", data)
+        self.assertIn("items", data)
+
 
 if __name__ == "__main__":
     unittest.main()

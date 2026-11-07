@@ -13,4 +13,4 @@ services:
       - key: TESSERACT_CMD
         value: /usr/bin/tesseract
       - key: CORS_ORIGINS
-        value: "*"
+        value: "https://ocr-g3tg.vercel.app,http://localhost:3000,http://127.0.0.1:3000"

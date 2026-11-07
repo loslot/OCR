@@ -83,8 +83,32 @@ export default function ScannerPage() {
     } catch (err: unknown) {
       let message = "An error occurred during OCR text extraction. Please try again.";
       if (err && typeof err === "object") {
-        const errorObj = err as { data?: { detail?: string }; message?: string };
-        message = errorObj.data?.detail || errorObj.message || message;
+        const errorObj = err as {
+          status?: number | string;
+          data?: { detail?: string };
+          message?: string;
+          error?: string;
+        };
+        if (
+          errorObj.status === "FETCH_ERROR" ||
+          errorObj.status === "TIMEOUT_ERROR"
+        ) {
+          message =
+            "Network connection failed. If the Render backend was sleeping, it may take ~45 seconds to spin up. Please try again in a moment.";
+        } else if (errorObj.status === 503) {
+          message =
+            errorObj.data?.detail ||
+            "OCR Service is temporarily unavailable. Please verify Tesseract language pack installation.";
+        } else if (errorObj.status === 502 || errorObj.status === 504) {
+          message =
+            "Backend gateway timeout. The Render instance may still be starting up. Please retry in 15 seconds.";
+        } else if (errorObj.data?.detail) {
+          message = errorObj.data.detail;
+        } else if (errorObj.message) {
+          message = errorObj.message;
+        } else if (errorObj.error) {
+          message = errorObj.error;
+        }
       }
       setExtractError(message);
       toast.error(message);

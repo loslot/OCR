@@ -208,7 +208,7 @@ export default function HistoryPage() {
             FAILED TO RETRIEVE HISTORY
           </h3>
           <p className="text-xs font-sans text-[#8B9690] mb-6">
-            Could not connect to FastAPI server at http://localhost:8001. Please ensure the backend is running.
+            Could not connect to the OCR backend. If the service is spinning up after inactivity (Render cold start), please wait ~30 seconds and retry.
           </p>
           <button
             onClick={() => refetch()}

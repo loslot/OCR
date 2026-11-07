@@ -31,8 +31,9 @@ class OCRService:
         pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_CMD
 
     def _tessdata_config(self) -> str:
-        if settings.TESSDATA_DIR:
-            return f'--tessdata-dir "{settings.TESSDATA_DIR}"'
+        tessdata_dir = settings.resolved_tessdata_dir
+        if tessdata_dir:
+            return f'--tessdata-dir "{tessdata_dir}"'
         return ""
 
     def _available_languages(self) -> set[str]:

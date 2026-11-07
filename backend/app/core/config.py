@@ -14,9 +14,10 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api"
 
     # CORS Settings (Next.js frontend support)
-    CORS_ORIGINS: List[str] = [
+    CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://ocr-g3tg.vercel.app",
     ]
 
     # Storage Paths
@@ -47,12 +48,58 @@ class Settings(BaseSettings):
     OCR_DENOISE_STRENGTH: int = 10
     OCR_TARGET_HEIGHT: int = 1800
 
+    @property
+    def resolved_tessdata_dir(self) -> Optional[str]:
+        """Resolve tessdata directory from env or local repository directory."""
+        if self.TESSDATA_DIR and Path(self.TESSDATA_DIR).is_dir():
+            return str(self.TESSDATA_DIR)
+        local_tessdata = self.BASE_DIR / "tessdata"
+        if local_tessdata.is_dir() and any(local_tessdata.glob("*.traineddata")):
+            return str(local_tessdata)
+        return None
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        return v
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("[") and v.endswith("]"):
+                try:
+                    import json
+                    parsed = json.loads(v)
+                    if isinstance(parsed, list):
+                        v = parsed
+                except Exception:
+                    pass
+            if isinstance(v, str):
+                origins = [origin.strip() for origin in v.split(",") if origin.strip()]
+            else:
+                origins = v
+        elif isinstance(v, (list, tuple, set)):
+            origins = list(v)
+        else:
+            origins = []
+
+        # Normalize trailing slashes and ensure distinct values
+        normalized: List[str] = []
+        for origin in origins:
+            if not isinstance(origin, str):
+                continue
+            cleaned = origin.strip().rstrip("/")
+            if cleaned and cleaned not in normalized:
+                normalized.append(cleaned)
+
+        # Retain production frontend and localhost for reliable communication
+        if "*" not in normalized:
+            for required in [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "https://ocr-g3tg.vercel.app",
+            ]:
+                if required not in normalized:
+                    normalized.append(required)
+
+        return normalized
 
     model_config = SettingsConfigDict(
         env_file=".env",

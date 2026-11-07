@@ -36,15 +36,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Configure CORS for Next.js frontend (http://localhost:3000)
+# Configure CORS for Next.js frontend (production Vercel and local dev)
+is_wildcard = "*" in settings.CORS_ORIGINS
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    # The browser client uses no cookies. Wildcard CORS is therefore valid for
-    # the public, unauthenticated OCR API when configured for Render.
-    allow_credentials="*" not in settings.CORS_ORIGINS,
-    allow_methods=["*"],
+    allow_origin_regex=r"^https://.*\.vercel\.app$" if not is_wildcard else None,
+    allow_credentials=not is_wildcard,
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS", "HEAD"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,
 )
 
 

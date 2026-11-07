@@ -97,18 +97,18 @@ export default function ImagePreview({
 
       {/* Language Selector & Extraction Trigger */}
       <div className="space-y-4 pt-2">
-        <div className="flex items-center justify-between gap-3 bg-[#0D1210] p-3 rounded-xl border border-[#1A2720]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0D1210] p-3 rounded-xl border border-[#1A2720]">
           <div className="flex items-center gap-2 text-xs font-mono text-[#8B9690]">
-            <Globe className="w-4 h-4 text-[#39FF14]" />
-            <span>OCR RECOGNITION LANGUAGE:</span>
+            <Globe className="w-4 h-4 text-[#39FF14] shrink-0" />
+            <span className="text-[11px] sm:text-xs">OCR RECOGNITION LANGUAGE:</span>
           </div>
 
-          <div className="flex items-center gap-1.5 font-mono text-xs">
+          <div className="flex items-center gap-1.5 font-mono text-xs flex-wrap">
             <button
               type="button"
               onClick={() => onLanguageChange("en")}
               disabled={isProcessing}
-              className={`px-3 py-1.5 rounded-lg border transition-all ${
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg border text-center transition-all ${
                 selectedLanguage === "en"
                   ? "bg-[#39FF14]/15 border-[#39FF14] text-[#39FF14] font-semibold shadow-[0_0_10px_rgba(57,255,20,0.2)]"
                   : "bg-[#080B0A] border-[#1A2720] text-[#8B9690] hover:text-[#F5F7F5]"
@@ -120,7 +120,7 @@ export default function ImagePreview({
               type="button"
               onClick={() => onLanguageChange("km")}
               disabled={isProcessing}
-              className={`px-3 py-1.5 rounded-lg border transition-all ${
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg border text-center transition-all ${
                 selectedLanguage === "km"
                   ? "bg-[#39FF14]/15 border-[#39FF14] text-[#39FF14] font-semibold shadow-[0_0_10px_rgba(57,255,20,0.2)]"
                   : "bg-[#080B0A] border-[#1A2720] text-[#8B9690] hover:text-[#F5F7F5]"
@@ -132,7 +132,7 @@ export default function ImagePreview({
               type="button"
               onClick={() => onLanguageChange("km+en")}
               disabled={isProcessing}
-              className={`px-3 py-1.5 rounded-lg border transition-all ${
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg border text-center transition-all ${
                 selectedLanguage === "km+en"
                   ? "bg-[#39FF14]/15 border-[#39FF14] text-[#39FF14] font-semibold shadow-[0_0_10px_rgba(57,255,20,0.2)]"
                   : "bg-[#080B0A] border-[#1A2720] text-[#8B9690] hover:text-[#F5F7F5]"

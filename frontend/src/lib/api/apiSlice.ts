@@ -11,7 +11,12 @@ import {
   healthResponseSchema,
 } from "@/lib/validations/ocr";
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+// Vercel and local builds can override this with NEXT_PUBLIC_API_URL. Keeping
+// the deployed API as a fallback also lets a fresh checkout connect without
+// a local .env.local file.
+const rawApiUrl =
+  process.env.NEXT_PUBLIC_API_URL || "https://ocr-6slt.onrender.com";
+
 // Ensure no trailing slash
 const API_URL = rawApiUrl.replace(/\/+$/, "");
 
@@ -19,6 +24,7 @@ export const apiSlice = createApi({
   reducerPath: "ocrApi",
   baseQuery: fetchBaseQuery({
     baseUrl: API_URL,
+    timeout: 60000,
     // Note: Do NOT set Content-Type header manually so multipart/form-data sets boundary correctly
   }),
   tagTypes: ["History", "Document", "Health"],

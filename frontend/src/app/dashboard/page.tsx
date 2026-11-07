@@ -121,7 +121,14 @@ export default function DashboardPage() {
         <StatCard
           title="OCR Engine Health"
           value={health?.status === "ok" ? "ACTIVE" : isHealthLoading ? "CHECKING" : "OFFLINE"}
-          subtitle={`FastAPI • ${health?.supported_languages?.join(", ").toUpperCase() || "EN"}`}
+          subtitle={
+            health?.status === "ok"
+              ? `FastAPI • ${health?.supported_languages?.join(", ").toUpperCase() || "EN"}`
+              : isHealthLoading
+              ? "Connecting to backend..."
+              : "Backend unavailable"
+          }
+          status={health?.status === "ok" ? "active" : isHealthLoading ? "warning" : "idle"}
           icon={<Activity className="w-5 h-5" />}
         />
       </div>

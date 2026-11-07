@@ -9,6 +9,7 @@ import {
   Home,
   Activity,
   Zap,
+  X,
 } from "lucide-react";
 import { useGetHealthQuery } from "@/lib/api/apiSlice";
 import { cn } from "@/lib/utils";
@@ -50,24 +51,36 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
     <aside className="w-64 h-full bg-[#0D1210]/95 border-r border-[#1A2720] flex flex-col justify-between p-5 backdrop-blur-xl">
       {/* Top: Logo & System Identity */}
       <div>
-        <Link
-          href="/"
-          onClick={onCloseMobile}
-          className="flex items-center gap-3 mb-8 group"
-        >
-          <div className="w-10 h-10 rounded-xl bg-[#111816] border border-[#1A2720] group-hover:border-[#39FF14]/50 flex items-center justify-center text-[#39FF14] shadow-[0_0_15px_rgba(57,255,20,0.15)] transition-all">
-            <Scan className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-          </div>
-          <div>
-            <div className="font-mono font-bold text-base text-[#F5F7F5] tracking-wider flex items-center gap-1.5">
-              <span>Quick</span>
-              <span className="text-[#39FF14]">OCR</span>
+        <div className="flex items-center justify-between mb-8">
+          <Link
+            href="/"
+            onClick={onCloseMobile}
+            className="flex items-center gap-3 group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#111816] border border-[#1A2720] group-hover:border-[#39FF14]/50 flex items-center justify-center text-[#39FF14] shadow-[0_0_15px_rgba(57,255,20,0.15)] transition-all">
+              <Scan className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
             </div>
-            <div className="text-[10px] font-mono text-[#8B9690] uppercase tracking-widest">
-              CYBER_NEURAL_v1.0
+            <div>
+              <div className="font-mono font-bold text-base text-[#F5F7F5] tracking-wider flex items-center gap-1.5">
+                <span>Quick</span>
+                <span className="text-[#39FF14]">OCR</span>
+              </div>
+              <div className="text-[10px] font-mono text-[#8B9690] uppercase tracking-widest">
+                CYBER_NEURAL_v1.0
+              </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="lg:hidden p-1.5 rounded-lg bg-[#111816] border border-[#1A2720] text-[#8B9690] hover:text-[#F5F7F5]"
+              title="Close Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
 
         {/* Navigation Links */}
         <div className="space-y-1.5">

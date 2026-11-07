@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ReactNode } from "react";
 
 interface ScrollRevealProps {
@@ -18,7 +18,10 @@ export default function ScrollReveal({
   className = "",
   direction = "up",
 }: ScrollRevealProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   const getInitialPosition = () => {
+    if (shouldReduceMotion) return { x: 0, y: 0 };
     switch (direction) {
       case "up":
         return { y: 24, x: 0 };
@@ -41,8 +44,8 @@ export default function ScrollReveal({
       whileInView={{ opacity: 1, x: 0, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{
-        duration,
-        delay,
+        duration: shouldReduceMotion ? 0.1 : duration,
+        delay: shouldReduceMotion ? 0 : delay,
         ease: [0.21, 0.47, 0.32, 0.98],
       }}
       className={className}

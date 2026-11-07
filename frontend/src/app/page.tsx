@@ -48,7 +48,7 @@ export default function LandingPage() {
 
             {/* Main Headline */}
             <ScrollReveal delay={0.2}>
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-mono font-extrabold tracking-tight text-[#F5F7F5] uppercase">
+              <h1 className="text-3xl sm:text-6xl lg:text-7xl font-mono font-extrabold tracking-tight text-[#F5F7F5] uppercase">
                 READ THE{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#39FF14] via-[#00E676] to-[#39FF14] drop-shadow-[0_0_30px_rgba(57,255,20,0.3)]">
                   DIGITAL WORLD.
@@ -209,7 +209,7 @@ export default function LandingPage() {
                 const Icon = feat.icon;
                 return (
                   <ScrollReveal key={feat.title} delay={i * 0.1}>
-                    <div className="group p-6 rounded-2xl bg-[#111816]/80 border border-[#1A2720] hover:border-[#39FF14]/40 transition-all duration-300 h-full flex flex-col justify-between backdrop-blur-md">
+                    <div className="group p-6 rounded-2xl bg-[#111816]/80 border border-[#1A2720] hover:border-[#39FF14]/40 hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(57,255,20,0.1)] transition-all duration-300 h-full flex flex-col justify-between backdrop-blur-md">
                       <div>
                         <div className="flex items-center justify-between mb-4">
                           <div className="p-3 rounded-xl bg-[#0D1210] border border-[#1A2720] text-[#00E676] group-hover:text-[#39FF14] group-hover:scale-110 transition-all">
