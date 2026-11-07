@@ -1,13 +1,25 @@
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
-from fastapi import FastAPI, HTTPException, Request, status
+from typing import AsyncGenerator, Optional
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.ocr import router as ocr_router
+from app.api.ocr import (
+    delete_document_by_id,
+    extract_text_from_image,
+    get_document_by_id,
+    get_ocr_history,
+    router as ocr_router,
+)
 from app.core.config import settings
-from app.schemas.ocr_schema import ErrorResponse, HealthResponse
+from app.schemas.ocr_schema import (
+    DeleteResponse,
+    ErrorResponse,
+    HealthResponse,
+    HistoryResponse,
+    OCRResponse,
+)
 
 # Configure application logging
 logging.basicConfig(
@@ -70,7 +82,12 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
     )
 
 
-# Health check endpoint
+# Health check endpoint (serves both /api/health and /health)
+@app.get(
+    "/health",
+    response_model=HealthResponse,
+    include_in_schema=False,
+)
 @app.get(
     f"{settings.API_PREFIX}/health",
     response_model=HealthResponse,
@@ -87,8 +104,48 @@ def health_check() -> HealthResponse:
     )
 
 
-# Include OCR routes under /api
+# Include standard OCR routes under /api (e.g. /api/ocr/extract, /api/ocr/history)
 app.include_router(ocr_router, prefix=settings.API_PREFIX)
+
+# Also mount OCR routes without /api prefix (/ocr/extract, /ocr/history) to avoid 404
+app.include_router(ocr_router, include_in_schema=False)
+
+
+# Direct route aliases for /api/extract and /extract (in case /ocr subpath is omitted)
+@app.post(
+    f"{settings.API_PREFIX}/extract",
+    response_model=OCRResponse,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
+)
+@app.post(
+    "/extract",
+    response_model=OCRResponse,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
+)
+async def extract_alias(
+    file: UploadFile = File(..., description="Image file to process"),
+    language: Optional[str] = Form(None),
+) -> OCRResponse:
+    """Convenience alias for /api/ocr/extract."""
+    return await extract_text_from_image(file=file, language=language)
+
+
+# Direct route aliases for /api/history and /history
+@app.get(
+    f"{settings.API_PREFIX}/history",
+    response_model=HistoryResponse,
+    include_in_schema=False,
+)
+@app.get(
+    "/history",
+    response_model=HistoryResponse,
+    include_in_schema=False,
+)
+def history_alias() -> HistoryResponse:
+    """Convenience alias for /api/ocr/history."""
+    return get_ocr_history()
 
 
 # Root redirect or greeting for convenience

@@ -10,20 +10,12 @@ import {
   historyResponseSchema,
   healthResponseSchema,
 } from "@/lib/validations/ocr";
-
-// Vercel and local builds can override this with NEXT_PUBLIC_API_URL. Keeping
-// the deployed API as a fallback also lets a fresh checkout connect without
-// a local .env.local file.
-const rawApiUrl =
-  process.env.NEXT_PUBLIC_API_URL || "https://ocr-6slt.onrender.com";
-
-// Ensure no trailing slash
-const API_URL = rawApiUrl.replace(/\/+$/, "");
+import { API_BASE_URL, API_ENDPOINTS } from "./config";
 
 export const apiSlice = createApi({
   reducerPath: "ocrApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: API_URL,
+    baseUrl: API_BASE_URL,
     timeout: 60000,
     // Note: Do NOT set Content-Type header manually so multipart/form-data sets boundary correctly
   }),
@@ -31,7 +23,7 @@ export const apiSlice = createApi({
   endpoints: (builder) => ({
     // 1. Health Check
     getHealth: builder.query<HealthResponse, void>({
-      query: () => "/api/health",
+      query: () => API_ENDPOINTS.HEALTH,
       providesTags: ["Health"],
       transformResponse: (response: unknown) => {
         const parsed = healthResponseSchema.safeParse(response);
@@ -53,7 +45,7 @@ export const apiSlice = createApi({
         formData.append("language", language);
 
         return {
-          url: "/api/ocr/extract",
+          url: API_ENDPOINTS.EXTRACT,
           method: "POST",
           body: formData,
         };
@@ -70,7 +62,7 @@ export const apiSlice = createApi({
 
     // 3. Document History
     getHistory: builder.query<HistoryResponse, void>({
-      query: () => "/api/ocr/history",
+      query: () => API_ENDPOINTS.HISTORY,
       providesTags: ["History"],
       transformResponse: (response: unknown) => {
         const parsed = historyResponseSchema.safeParse(response);
@@ -83,7 +75,7 @@ export const apiSlice = createApi({
 
     // 4. Single Document Detail
     getDocumentById: builder.query<OCRResponse, string>({
-      query: (documentId) => `/api/ocr/${documentId}`,
+      query: (documentId) => API_ENDPOINTS.DOCUMENT_BY_ID(documentId),
       providesTags: (_result, _error, id) => [{ type: "Document", id }],
       transformResponse: (response: unknown) => {
         const parsed = ocrResponseSchema.safeParse(response);
@@ -97,7 +89,7 @@ export const apiSlice = createApi({
     // 5. Delete Document
     deleteDocument: builder.mutation<DeleteResponse, string>({
       query: (documentId) => ({
-        url: `/api/ocr/${documentId}`,
+        url: API_ENDPOINTS.DOCUMENT_BY_ID(documentId),
         method: "DELETE",
       }),
       invalidatesTags: (_result, _error, id) => [

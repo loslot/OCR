@@ -129,6 +129,24 @@ class OCRAPIIntegrationTests(unittest.TestCase):
         self.assertIn("total", data)
         self.assertIn("items", data)
 
+    def test_route_aliases_prevent_404(self):
+        client = TestClient(app)
+        # 1. Root /health alias
+        res_health = client.get("/health")
+        self.assertEqual(res_health.status_code, 200)
+        self.assertEqual(res_health.json()["status"], "ok")
+
+        # 2. History aliases
+        res_hist1 = client.get("/api/history")
+        self.assertEqual(res_hist1.status_code, 200)
+        res_hist2 = client.get("/history")
+        self.assertEqual(res_hist2.status_code, 200)
+
+        # 3. Extract aliases reject bad file rather than 404
+        for path in ["/api/extract", "/extract", "/ocr/extract"]:
+            res_ext = client.post(path, files={"file": ("bad.pdf", b"data", "application/pdf")})
+            self.assertEqual(res_ext.status_code, 400, f"Expected 400 for {path}, got {res_ext.status_code}")
+
 
 if __name__ == "__main__":
     unittest.main()
