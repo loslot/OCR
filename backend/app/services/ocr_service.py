@@ -1,6 +1,8 @@
 import logging
+import os
 import time
 from datetime import datetime, timezone
+from turtle import rt
 from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
@@ -28,7 +30,10 @@ class OCRService:
 
     def _configure(self) -> None:
         """Set the executable configured by the operator; no machine path is assumed."""
-        pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_CMD
+        pytesseract.pytesseract.tesseract_cmd = os.getenv(
+    "TESSERACT_CMD",
+    "/usr/bin/tesseract"
+)
 
     def _tessdata_config(self) -> str:
         tessdata_dir = settings.resolved_tessdata_dir

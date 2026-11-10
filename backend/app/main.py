@@ -21,6 +21,11 @@ from app.schemas.ocr_schema import (
     OCRResponse,
 )
 
+origins = [
+    "https://ocr-g3tg-klovhhdbo-loslots-projects.vercel.app",
+    "http://localhost:3000",
+]
+
 # Configure application logging
 logging.basicConfig(
     level=logging.INFO,
@@ -53,7 +58,8 @@ is_wildcard = "*" in settings.CORS_ORIGINS
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=origins,
+    # allow_origins=settings.CORS_ORIGINS,
     allow_origin_regex=r"^https://.*\.vercel\.app$" if not is_wildcard else None,
     allow_credentials=not is_wildcard,
     allow_methods=["GET", "POST", "DELETE", "OPTIONS", "HEAD"],
