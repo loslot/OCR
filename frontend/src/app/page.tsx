@@ -30,14 +30,14 @@ export default function LandingPage() {
 
       <main className="flex-1 pt-24">
         {/* ================= HERO SECTION ================= */}
-        <section className="relative min-h-[calc(100vh-6rem)] flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <section className="relative min-h-[calc(100svh-4rem)] sm:min-h-[calc(100vh-6rem)] flex items-center justify-center py-14 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
           {/* Subtle Ambient Radial Glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[#39FF14]/[0.035] rounded-full blur-[160px] pointer-events-none" />
 
-          <div className="max-w-5xl mx-auto text-center relative z-10">
+          <div className="w-full max-w-5xl mx-auto text-center relative z-10">
             {/* System Tag / Badge */}
             <ScrollReveal direction="down" delay={0.1}>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111816] border border-[#1A2720] text-xs font-mono text-[#00E676] mb-8 shadow-sm">
+              <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3 py-1.5 sm:px-3.5 rounded-full bg-[#111816] border border-[#1A2720] text-[10px] sm:text-xs font-mono text-[#00E676] mb-6 sm:mb-8 shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-[#39FF14] animate-pulse" />
                 <span className="text-[#8B9690]">{"//"}</span>
                 <span>NEURAL OPTICAL ENGINE ACTIVE</span>
@@ -48,7 +48,7 @@ export default function LandingPage() {
 
             {/* Main Headline */}
             <ScrollReveal delay={0.2}>
-              <h1 className="text-3xl sm:text-6xl lg:text-7xl font-mono font-extrabold tracking-tight text-[#F5F7F5] uppercase">
+              <h1 className="text-[clamp(2rem,8.2vw,3.75rem)] lg:text-7xl leading-[1.08] font-mono font-extrabold tracking-tight text-[#F5F7F5] uppercase">
                 READ THE{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#39FF14] via-[#00E676] to-[#39FF14] drop-shadow-[0_0_30px_rgba(57,255,20,0.3)]">
                   DIGITAL WORLD.
@@ -58,7 +58,7 @@ export default function LandingPage() {
 
             {/* Subtitle */}
             <ScrollReveal delay={0.3}>
-              <p className="mt-6 text-lg sm:text-xl text-[#8B9690] max-w-2xl mx-auto font-sans leading-relaxed">
+              <p className="mt-4 sm:mt-6 text-base sm:text-lg lg:text-xl text-[#8B9690] max-w-2xl mx-auto font-sans leading-relaxed">
                 AI-powered text extraction from images.
                 <br className="hidden sm:inline" /> High-speed OCR with deep neural tensor recognition, sub-second latency, and zero database footprint.
               </p>
@@ -66,10 +66,10 @@ export default function LandingPage() {
 
             {/* CTAs */}
             <ScrollReveal delay={0.4}>
-              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="mt-7 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4">
                 <Link
                   href="/scanner"
-                  className="w-full sm:w-auto px-8 py-4 rounded-xl font-mono text-sm font-semibold tracking-wider text-[#080B0A] bg-[#39FF14] hover:bg-[#00E676] shadow-[0_0_30px_rgba(57,255,20,0.4)] hover:shadow-[0_0_40px_rgba(57,255,20,0.6)] transition-all flex items-center justify-center gap-2.5"
+                  className="w-full sm:w-auto px-5 sm:px-8 py-3.5 sm:py-4 rounded-xl font-mono text-xs sm:text-sm font-semibold tracking-wider text-[#080B0A] bg-[#39FF14] hover:bg-[#00E676] shadow-[0_0_30px_rgba(57,255,20,0.4)] hover:shadow-[0_0_40px_rgba(57,255,20,0.6)] transition-all flex items-center justify-center gap-2.5"
                 >
                   <Zap className="w-4 h-4 fill-current" />
                   <span>LAUNCH SCANNER</span>
@@ -77,7 +77,7 @@ export default function LandingPage() {
 
                 <Link
                   href="/dashboard"
-                  className="w-full sm:w-auto px-8 py-4 rounded-xl font-mono text-sm font-semibold tracking-wider text-[#F5F7F5] bg-[#111816] hover:bg-[#16201D] border border-[#1A2720] hover:border-[#39FF14]/40 transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-5 sm:px-8 py-3.5 sm:py-4 rounded-xl font-mono text-xs sm:text-sm font-semibold tracking-wider text-[#F5F7F5] bg-[#111816] hover:bg-[#16201D] border border-[#1A2720] hover:border-[#39FF14]/40 transition-all flex items-center justify-center gap-2"
                 >
                   <span>OPEN DASHBOARD</span>
                   <ArrowRight className="w-4 h-4 text-[#39FF14]" />
@@ -87,28 +87,28 @@ export default function LandingPage() {
 
             {/* Live Cyber Interactive Terminal Preview */}
             <ScrollReveal delay={0.5}>
-              <div className="mt-16 max-w-3xl mx-auto text-left rounded-2xl bg-[#0D1210]/90 border border-[#1A2720] shadow-[0_0_50px_rgba(0,0,0,0.9)] overflow-hidden backdrop-blur-xl">
+              <div className="mt-10 sm:mt-16 max-w-3xl mx-auto text-left rounded-2xl bg-[#0D1210]/90 border border-[#1A2720] shadow-[0_0_50px_rgba(0,0,0,0.9)] overflow-hidden backdrop-blur-xl">
                 {/* Window Topbar */}
-                <div className="px-4 py-3 bg-[#080B0A] border-b border-[#1A2720] flex items-center justify-between font-mono text-xs text-[#8B9690]">
-                  <div className="flex items-center gap-2">
+                <div className="px-3 sm:px-4 py-3 bg-[#080B0A] border-b border-[#1A2720] flex items-center justify-between gap-2 font-mono text-[10px] sm:text-xs text-[#8B9690]">
+                  <div className="min-w-0 flex items-center gap-1.5 sm:gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#FF4D4D]/80" />
                     <span className="w-2.5 h-2.5 rounded-full bg-[#FFB020]/80" />
                     <span className="w-2.5 h-2.5 rounded-full bg-[#39FF14]/80" />
-                    <span className="ml-2 text-[#8B9690]">{"//"}</span>
-                    <span className="text-[#F5F7F5]">quickocr_engine_telemetry.sh</span>
+                    <span className="ml-1 sm:ml-2 text-[#8B9690]">{"//"}</span>
+                    <span className="truncate text-[#F5F7F5]">quickocr_engine_telemetry.sh</span>
                   </div>
-                  <div className="text-[10px] text-[#39FF14] flex items-center gap-1.5">
+                  <div className="shrink-0 text-[9px] sm:text-[10px] text-[#39FF14] flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#39FF14] animate-ping" />
                     INFERENCE_STREAMING
                   </div>
                 </div>
 
                 {/* Simulated Scanning Interface */}
-                <div className="p-6 font-mono text-xs space-y-3 relative overflow-hidden">
+                <div className="p-3 sm:p-6 font-mono text-[10px] sm:text-xs space-y-3 relative overflow-hidden">
                   {/* Laser Scanline Beam */}
                   <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#39FF14] to-transparent shadow-[0_0_12px_#39FF14] animate-scanline pointer-events-none" />
 
-                  <div className="text-[#8B9690]">
+                  <div className="break-words text-[#8B9690]">
                     &gt; <span className="text-[#F5F7F5]">quickocr --input document.png --lang en --mode high-precision</span>
                   </div>
                   <div className="text-[#00E676]">
@@ -122,11 +122,11 @@ export default function LandingPage() {
                     {sampleLines.map((line, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-2 rounded bg-[#080B0A] border border-[#1A2720]/60"
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 p-2 rounded bg-[#080B0A] border border-[#1A2720]/60"
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="min-w-0 flex items-center gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-[#39FF14]" />
-                          <span className="text-[#F5F7F5]">{line.text}</span>
+                          <span className="break-words text-[#F5F7F5]">{line.text}</span>
                         </div>
                         <span
                           className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#111816]"
@@ -138,7 +138,7 @@ export default function LandingPage() {
                     ))}
                   </div>
 
-                  <div className="pt-2 text-[#8B9690] flex items-center justify-between text-[11px]">
+                  <div className="pt-2 text-[#8B9690] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[9px] sm:text-[11px]">
                     <span>STATUS: 201 CREATED</span>
                     <span className="text-[#39FF14]">DURATION: 0.42s • 100% SUCCESS</span>
                   </div>

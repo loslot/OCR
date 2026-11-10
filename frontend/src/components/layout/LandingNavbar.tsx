@@ -32,7 +32,7 @@ export default function LandingNavbar() {
         </Link>
 
         {/* Desktop Center Nav */}
-        <nav className="hidden md:flex items-center gap-6 font-mono text-xs text-[#8B9690]">
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-6 font-mono text-xs text-[#8B9690]">
           {navLinks.map((link) => {
             const Icon = link.icon;
             return (
@@ -50,7 +50,7 @@ export default function LandingNavbar() {
 
         {/* Right CTA & Status */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0D1210] border border-[#1A2720] text-[11px] font-mono">
+          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0D1210] border border-[#1A2720] text-[11px] font-mono">
             <span
               className={`w-1.5 h-1.5 rounded-full ${
                 isSuccess
@@ -80,7 +80,7 @@ export default function LandingNavbar() {
 
           <Link
             href="/scanner"
-            className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl font-mono text-xs font-semibold text-[#080B0A] bg-[#39FF14] hover:bg-[#00E676] shadow-[0_0_20px_rgba(57,255,20,0.3)] hover:shadow-[0_0_25px_rgba(57,255,20,0.5)] transition-all"
+            className="hidden sm:flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-xl font-mono text-[10px] md:text-xs font-semibold text-[#080B0A] bg-[#39FF14] hover:bg-[#00E676] shadow-[0_0_20px_rgba(57,255,20,0.3)] hover:shadow-[0_0_25px_rgba(57,255,20,0.5)] transition-all"
           >
             <Zap className="w-3.5 h-3.5 fill-current" />
             <span>LAUNCH SCANNER</span>
@@ -89,7 +89,7 @@ export default function LandingNavbar() {
           {/* Mobile Menu Hamburger Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl bg-[#111816] border border-[#1A2720] text-[#8B9690] hover:text-[#F5F7F5] focus:outline-none"
+            className="lg:hidden p-2 rounded-xl bg-[#111816] border border-[#1A2720] text-[#8B9690] hover:text-[#F5F7F5] focus:outline-none"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5 text-[#39FF14]" /> : <Menu className="w-5 h-5" />}
@@ -105,7 +105,7 @@ export default function LandingNavbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden border-b border-[#1A2720] bg-[#080B0A]/95 backdrop-blur-2xl px-4 py-5 overflow-hidden"
+            className="lg:hidden border-b border-[#1A2720] bg-[#080B0A]/95 backdrop-blur-2xl px-4 py-5 overflow-hidden"
           >
             <nav className="flex flex-col gap-3 font-mono text-sm">
               {navLinks.map((link) => {
