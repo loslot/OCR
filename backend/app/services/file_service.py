@@ -10,7 +10,7 @@ from app.core.config import settings
 
 
 class FileService:
-    """Service to handle local file uploads, validation, and JSON result storage."""
+    """Service to handle local file uploads, validation, and JSON result storage.."""
 
     @staticmethod
     def generate_document_id() -> str:
