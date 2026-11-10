@@ -10,7 +10,7 @@
  * - Exposes standardized endpoint paths matching FastAPI routes.
  */
 
-export const PRODUCTION_API_URL = "https://ocr-6s1t.onrender.com";
+export const PRODUCTION_API_URL = "https://ocr-6slt.onrender.com";
 export const LOCAL_API_URL = "http://localhost:8000";
 
 /**
